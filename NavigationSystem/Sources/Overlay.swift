@@ -12,9 +12,16 @@ import SpriteKit
 class Overlay: SKScene {
     
     public var speedLabel: SKLabelNode!
+    public var left: SKSpriteNode!
+    public var right: SKSpriteNode!
+    public var controlDelegate: control!
     
     override func didMove(to view: SKView) {
         self.initialize()
+        self.left = self.childNode(withName: "left") as! SKSpriteNode
+        self.left.isUserInteractionEnabled = true
+        self.right = self.childNode(withName: "right") as! SKSpriteNode
+        self.right.isUserInteractionEnabled = true
     }
     
     func initialize() {
@@ -25,6 +32,16 @@ class Overlay: SKScene {
 
 extension SKSpriteNode {
     override open func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-    
+        
+        if let overlay = self.parent as? Overlay {
+            if self.name == "left" {
+                overlay.controlDelegate.turn(a: -10)
+                print("esquerda")
+            }
+            else {
+                overlay.controlDelegate.turn(a: 10)
+                print("direita")
+            }
+        }
     }
 }

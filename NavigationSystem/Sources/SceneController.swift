@@ -17,7 +17,19 @@ enum CategoryBitMask: Int {
     case floor = 8
 }
 
+protocol control {
+    func turn(a: Float)
+}
+extension SceneController: control {
+    func turn(a: Float) {
+        let angulo = 180 * self.carDirection/Float.pi + a
+        self.turnCar(degreeAngle: angulo)
+    }
+
+}
 public class SceneController: NSObject  {
+    var systemSpeed: Float = 0
+    var carDirection: Float = 0
     
     var previuosTime: TimeInterval = 0
     var updateVisorTime: TimeInterval = 0
@@ -67,6 +79,7 @@ public class SceneController: NSObject  {
     
     
     
+    
     func setupSensors() {
         guard let radarIndicators = self.scene?.rootNode.childNode(withName: "radarIndicators", recursively: true)?.childNodes,
             let radars = self.scene?.rootNode.childNode(withName: "radarPB", recursively: true)?.childNodes else {
@@ -76,11 +89,11 @@ public class SceneController: NSObject  {
         
     }
     
-    func getSpeed() -> Float {
-        guard let speed = self.car.physicsBody?.velocity.z else {
+    func getSpeed() -> SCNVector3 {
+        guard let velocity = self.car.physicsBody?.velocity else {
             fatalError("Error getting speed")
         }
-        return abs(speed)
+        return velocity
     }
     
 }
@@ -93,7 +106,8 @@ extension SceneController: SCNSceneRendererDelegate {
         self.updateVisorTime += deltaTime
         if updateVisorTime > 0.5 {
             let speed = self.getSpeed()
-            let formatedSpeed = String(format: "%.1f", speed * 18)
+            let speedModule = sqrt(speed.x * speed.x + speed.z * speed.z)
+            let formatedSpeed = String(format: "%.1f", speedModule * 18)
             
             let overlay = self.scnView.overlaySKScene as! Overlay
             overlay.speedLabel.text = formatedSpeed
@@ -103,6 +117,7 @@ extension SceneController: SCNSceneRendererDelegate {
         
         self.carBox.position = self.car.presentation.position
         self.carBox.eulerAngles = self.car.presentation.eulerAngles
+        print(self.car.presentation.position)
     }
 }
 extension SceneController: SCNPhysicsContactDelegate {

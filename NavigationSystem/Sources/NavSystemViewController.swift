@@ -61,7 +61,8 @@ public class NavSystemViewController: UIViewController {
     public func foo() {
         self.systemInterface.routine {
             self.systemInterface.changeCamera(type: .upper)
-            self.systemInterface.setSpeed(speed: 40)
+            self.systemInterface.setSpeed(speed: 10)
+            //self.systemInterface.turnCar(degreeAngle: 45)
             self.systemInterface.setupFrontalRadars(limitDistance: 7)
             self.systemInterface.showRadars()
             

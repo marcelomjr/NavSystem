@@ -29,4 +29,5 @@ public protocol NaveInterface {
     func hideRadars()
     func routine(block: (() -> Void)?)
     func createScene(named: String)
+    func turnCar(degreeAngle: Float)
 }

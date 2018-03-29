@@ -30,6 +30,7 @@ extension SceneController: NaveInterface {
         
         let skScene = Overlay(fileNamed: "art.scnassets/overlay.sks")!
         skScene.scaleMode = .aspectFit
+        skScene.controlDelegate = self
         self.scnView.overlaySKScene = skScene
         
         self.setupSensors()
@@ -73,18 +74,37 @@ extension SceneController: NaveInterface {
     
     public func setSpeed(speed: Float) {
         self.car.removeAllActions()
-        let trueSpeed = speed / 18
+        let trueSpeed = speed / 18 //km/h
+        
+        // velocidade atual pretendida
+        self.systemSpeed = trueSpeed
+      
         let setSpeedAction = SCNAction.run({ (node) in
             
+            let goalSpeedX = self.systemSpeed * sin(self.carDirection)
+            let goalSpeedZ = -self.systemSpeed * cos(self.carDirection)
+
             let currentSpeed = self.getSpeed()
             
-            let deltaV = -(trueSpeed - currentSpeed)
+            let deltaSpeedX = -(goalSpeedX - currentSpeed.x)
+            let deltaSpeedZ = goalSpeedZ - currentSpeed.z
             
-            if abs(deltaV) < 0.4 {
-                self.car.physicsBody?.velocity.z = -trueSpeed
+            
+            
+            if abs(deltaSpeedX) < 0.4 {
+                self.car.physicsBody?.velocity.x = goalSpeedX
             }
             else {
-                self.car.physicsBody?.velocity.z += deltaV / (2 * abs(deltaV))
+                self.car.physicsBody?.velocity.x += goalSpeedX / (2 * abs(goalSpeedX))
+                print(self.car.physicsBody?.velocity.x)
+            }
+            
+            
+            if abs(deltaSpeedZ) < 0.4 {
+                self.car.physicsBody?.velocity.z = goalSpeedZ
+            }
+            else {
+                self.car.physicsBody?.velocity.z += deltaSpeedZ / (2 * abs(deltaSpeedZ))
             }
         })
         
@@ -106,7 +126,6 @@ extension SceneController: NaveInterface {
                     
                     self.car.physicsBody?.velocity.z = speed * 0.97
                 }
-                
             }
         })
         let sequence = [brakingAction, SCNAction.wait(duration: 0.1)]
@@ -118,6 +137,12 @@ extension SceneController: NaveInterface {
         self.routineBlock = block
     }
     
-    
+    public func turnCar(degreeAngle: Float) {
+        let angle = degreeAngle * Float.pi / 180
+       
+        self.carDirection = angle
+        let mesh = self.car.childNodes[0]
+        mesh.runAction(SCNAction.rotateTo(x: 0, y: CGFloat(-angle), z: 0, duration: 0.5))
+    }
 }
 
