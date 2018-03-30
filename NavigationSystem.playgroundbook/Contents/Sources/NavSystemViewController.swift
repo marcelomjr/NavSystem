@@ -15,9 +15,8 @@ public class NavSystemViewController: UIViewController {
     private var sceneName: String!
     var sceneController: SceneController!
     
-    public override func loadView() {
-        
-        super.loadView()
+    public override func viewDidLoad() {
+        super.viewDidLoad()
         
         //================================================================================
                 let frame = CGRect(origin: CGPoint.zero, size: CGSize(width: 600, height: 800))
@@ -61,17 +60,16 @@ public class NavSystemViewController: UIViewController {
     
     public func foo() {
         self.systemInterface.routine {
-            self.systemInterface.changeCamera(type: .coneProfile)
-            self.systemInterface.setSpeed(speed: 40)
-            
-            //hide
-            self.systemInterface.setupFrontalRadars(limitDistance: 10)
+            self.systemInterface.changeCamera(type: .upper)
+            self.systemInterface.setSpeed(speed: 10)
+            //self.systemInterface.turnCar(degreeAngle: 45)
+            self.systemInterface.setupFrontalRadars(limitDistance: 7)
             self.systemInterface.showRadars()
-            // end hide
+            
             func obstacleDetectedHandler() {
                 self.systemInterface.brakeTheCar()
             }
-
+            
             self.systemInterface.obstacleDetected(handler: obstacleDetectedHandler)
         }
     }

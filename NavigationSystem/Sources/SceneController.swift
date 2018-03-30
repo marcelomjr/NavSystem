@@ -22,14 +22,15 @@ protocol control {
 }
 extension SceneController: control {
     func turn(a: Float) {
-        let angulo = 180 * self.carDirection/Float.pi + a
-        self.turnCar(degreeAngle: angulo)
+        self.turnCar(radius: 12)
     }
 
 }
 public class SceneController: NSObject  {
-    var systemSpeed: Float = 0
+    var simulationAngle: Float = 0
+    var desiredSpeedModule: Float = 0
     var carDirection: Float = 0
+    var carPivot: SCNNode!
     
     var previuosTime: TimeInterval = 0
     var updateVisorTime: TimeInterval = 0
@@ -111,13 +112,13 @@ extension SceneController: SCNSceneRendererDelegate {
             
             let overlay = self.scnView.overlaySKScene as! Overlay
             overlay.speedLabel.text = formatedSpeed
+            overlay.angle.text = String(self.carPivot.eulerAngles.y * (180/Float.pi))
             
             self.updateVisorTime = 0
         }
-        
+
         self.carBox.position = self.car.presentation.position
         self.carBox.eulerAngles = self.car.presentation.eulerAngles
-        print(self.car.presentation.position)
     }
 }
 extension SceneController: SCNPhysicsContactDelegate {

@@ -17,13 +17,22 @@ enum CategoryBitMask: Int {
     case floor = 8
 }
 
+protocol control {
+    func turn(a: Float)
+}
+extension SceneController: control {
+    func turn(a: Float) {
+        let angulo = 180 * self.carDirection/Float.pi + a
+        self.turnCar(degreeAngle: angulo)
+    }
+
+}
 public class SceneController: NSObject  {
+    var systemSpeed: Float = 0
+    var carDirection: Float = 0
     
     var previuosTime: TimeInterval = 0
     var updateVisorTime: TimeInterval = 0
-    var sounds: [String: SCNAudioSource] =  [String: SCNAudioSource]()
-    var brakingAction: SCNAction!
-    var state: String = ""
     
     //    public var speed: Float = 0
     var obstacleHandler: () -> Void = {}
@@ -69,61 +78,7 @@ public class SceneController: NSObject  {
     
     
     
-    func setupSounds() {
-        
-        let soundsName = ["braking", "runninLoop"]
-        for soundName in soundsName {
-            guard let audioSource = SCNAudioSource(fileNamed: "art.scnassets/sounds/" + soundName + ".wav") else {
-                fatalError("Error in find the sound \(soundName)")
-            }
-            
-            // Volume default de reprodução
-            audioSource.volume = 1
-            
-            // Varia com a posição
-            audioSource.isPositional = true
-            
-            // Não vai precisar pq vai fazer pro-load na memória
-            audioSource.shouldStream = false
-            
-            // Carrega o audio na memoria
-            audioSource.load()
-            
-            // Adiciona o audioSource ao dicionário
-            self.sounds[soundName] = audioSource
-        }
-        
-        
-    }
     
-    func setupActions() {
-        guard let sound = self.sounds["braking"] else {
-            print("Error sound")
-            return
-        }
-        let soundAction = SCNAction.playAudio(sound, waitForCompletion: false)
-        
-        let brakingAction = SCNAction.run({ (node) in
-            if let speed = self.car.physicsBody?.velocity.z {
-                
-                if abs(speed) < 0.5 {
-                    self.car.physicsBody?.velocity.z = 0
-                    //                    self.car.removeAllActions()
-                }
-                else {
-                    
-                    self.car.physicsBody?.velocity.z = speed * 0.94
-                }
-                
-            }
-        })
-        let sequence = [brakingAction, SCNAction.wait(duration: 0.1)]
-        let repeateSequence = SCNAction.repeatForever(SCNAction.sequence(sequence))
-        
-        let group = [soundAction, repeateSequence]
-       self.brakingAction = SCNAction.group(group)
-        
-    }
     
     func setupSensors() {
         guard let radarIndicators = self.scene?.rootNode.childNode(withName: "radarIndicators", recursively: true)?.childNodes,
@@ -134,11 +89,11 @@ public class SceneController: NSObject  {
         
     }
     
-    func getSpeed() -> Float {
-        guard let speed = self.car.physicsBody?.velocity.z else {
+    func getSpeed() -> SCNVector3 {
+        guard let velocity = self.car.physicsBody?.velocity else {
             fatalError("Error getting speed")
         }
-        return abs(speed)
+        return velocity
     }
     
 }
@@ -151,7 +106,8 @@ extension SceneController: SCNSceneRendererDelegate {
         self.updateVisorTime += deltaTime
         if updateVisorTime > 0.5 {
             let speed = self.getSpeed()
-            let formatedSpeed = String(format: "%.1f", speed * 18)
+            let speedModule = sqrt(speed.x * speed.x + speed.z * speed.z)
+            let formatedSpeed = String(format: "%.1f", speedModule * 18)
             
             let overlay = self.scnView.overlaySKScene as! Overlay
             overlay.speedLabel.text = formatedSpeed
@@ -161,6 +117,7 @@ extension SceneController: SCNSceneRendererDelegate {
         
         self.carBox.position = self.car.presentation.position
         self.carBox.eulerAngles = self.car.presentation.eulerAngles
+        print(self.car.presentation.position)
     }
 }
 extension SceneController: SCNPhysicsContactDelegate {
