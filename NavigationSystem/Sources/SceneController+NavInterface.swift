@@ -200,7 +200,7 @@ extension SceneController: NaveInterface {
     }
     
     public func turnCar(radius: Float, angle: Float) {
-        let turnAngle = CGFloat(angle * (Float.pi / 180))
+        let turnAngle = -angle * (Float.pi / 180)
         let carAngle = self.carPivot.eulerAngles.y
         
         let origin = turnSimulation(radAngle: 0, radius: radius)
@@ -218,7 +218,7 @@ extension SceneController: NaveInterface {
         self.simulationAngle = 0
         
         let rotateAction = SCNAction.run { _ in
-            self.carPivot.runAction(SCNAction.rotateBy(x: 0, y: turnAngle, z: 0, duration: turnTime))
+            self.carPivot.runAction(SCNAction.rotateBy(x: 0, y: CGFloat(turnAngle), z: 0, duration: turnTime))
         }
         
         let turnAction = SCNAction.run { (node) in
@@ -227,11 +227,13 @@ extension SceneController: NaveInterface {
             let rotated = self.rotateSimulation(radAngle: -carAngle, point: moved, correction: correction)
             print("carAngle: \((carAngle * 180) / Float.pi) | moved: \(moved) | rotated: \(rotated)")
             
+            
             self.car.physicsBody?.applyForce(SCNVector3(torque * rotated.x, 0, torque * rotated.y), asImpulse: true)
-            self.simulationAngle += (Float.pi/2) * (1/100)
+            self.simulationAngle += turnAngle * (1/100)
             
         }
-        let sequence = SCNAction.sequence([turnAction, SCNAction.wait(duration: 0.015)])
+        let waitTime = TimeInterval(turnTime / 100)
+        let sequence = SCNAction.sequence([turnAction, SCNAction.wait(duration: waitTime)])
         let turnSequenceLoop = SCNAction.repeat(sequence, count: 100)
         
         let turnGroup = SCNAction.group([turnSequenceLoop, rotateAction])

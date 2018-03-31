@@ -20,13 +20,17 @@ enum CategoryBitMask: Int {
 protocol control {
     func turn(a: Float)
     func brake()
+    func setSpeed(a: Float)
 }
 extension SceneController: control {
     func turn(a: Float) {
-        turnCar(radius: 12, angle: a)
+        turnCar(radius: 5, angle: a)
     }
     func brake() {
         self.brakeTheCar(goalSpeed: 0)
+    }
+    func setSpeed(a: Float) {
+        self.setSpeed(speed: a)
     }
 
 }

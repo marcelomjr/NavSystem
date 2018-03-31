@@ -30,7 +30,7 @@ public class NavSystemViewController: UIViewController {
         
         scnView.showsStatistics = true
         //        scnView.allowsCameraControl = true
-//        scnView.debugOptions = SCNDebugOptions.showPhysicsShapes
+        scnView.debugOptions = SCNDebugOptions.showPhysicsShapes
         
         self.systemInterface = self.sceneController
         

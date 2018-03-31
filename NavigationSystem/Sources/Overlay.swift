@@ -16,6 +16,7 @@ class Overlay: SKScene {
     public var left: SKSpriteNode!
     public var right: SKSpriteNode!
     public var brake: SKSpriteNode!
+    public var speedNode: SKSpriteNode!
     public var controlDelegate: control!
     
     override func didMove(to view: SKView) {
@@ -23,6 +24,9 @@ class Overlay: SKScene {
         
         self.left = self.childNode(withName: "left") as! SKSpriteNode
         self.left.isUserInteractionEnabled = true
+        
+        self.speedNode = self.childNode(withName: "speedbutton") as! SKSpriteNode
+        self.speedNode.isUserInteractionEnabled = true
         
         self.right = self.childNode(withName: "right") as! SKSpriteNode
         self.right.isUserInteractionEnabled = true
@@ -45,11 +49,14 @@ extension SKSpriteNode {
             if self.name == "brake"{
                 overlay.controlDelegate.brake()
             }
+            else if self.name == "speedbutton" {
+                overlay.controlDelegate.setSpeed(a: 40)
+            }
             else if self.name == "left" {
-                overlay.controlDelegate.turn(a: -10)
+                overlay.controlDelegate.turn(a: -90)
             }
             else {
-                overlay.controlDelegate.turn(a: 10)
+                overlay.controlDelegate.turn(a: 90)
             }
         }
     }
