@@ -30,15 +30,14 @@ extension SceneController: control {
         self.brakeTheCar(goalSpeed: 0)
     }
     func setSpeed(a: Float) {
-        self.setSpeed(speed: a)
+        self.setSpeed(speed: a / self.SpeedUnit)
     }
 
 }
 public class SceneController: NSObject  {
     var simulationAngle: Float = 0
-    var desiredSpeedModule: Float = 0
+    let SpeedUnit: Float = 18 // (1 / SpeedUnit) m/s
     var carDirection: Float = 0
-    var carPivot: SCNNode!
     
     var previuosTime: TimeInterval = 0
     var updateVisorTime: TimeInterval = 0
@@ -120,7 +119,7 @@ extension SceneController: SCNSceneRendererDelegate {
             
             let overlay = self.scnView.overlaySKScene as! Overlay
             overlay.speedLabel.text = formatedSpeed
-            overlay.angle.text = String(self.carPivot.eulerAngles.y * (180/Float.pi))
+            overlay.angle.text = String(self.car.eulerAngles.y * (180/Float.pi))
             
             self.updateVisorTime = 0
         }
