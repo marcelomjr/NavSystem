@@ -12,17 +12,21 @@ import SpriteKit
 
 enum CategoryBitMask: Int {
     case obstacle = 1
-    case radar = 2
+    case radar = 2  
     case car = 4
     case floor = 8
 }
 
 protocol control {
     func turn(a: Float)
+    func brake()
 }
 extension SceneController: control {
     func turn(a: Float) {
-        self.turnCar(radius: 12)
+        turnCar(radius: 12, angle: a)
+    }
+    func brake() {
+        self.brakeTheCar(goalSpeed: 0)
     }
 
 }

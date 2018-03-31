@@ -120,68 +120,61 @@ extension SceneController: NaveInterface {
     
     
     public func setSpeed(speed: Float) {
+        self.desiredSpeedModule = speed
         
         let moveAction = SCNAction.run { _ in
-            self.car.physicsBody?.applyForce(SCNVector3(0,0, 100), asImpulse: true)
+            let angle = self.carPivot.presentation.eulerAngles.y
+            let torque: Float = 200
+            
+            
+            if let currentSpeed = self.car.physicsBody?.velocity {
+                let speedModule = sqrt(currentSpeed.x * currentSpeed.x + currentSpeed.z * currentSpeed.z)
+                
+                if speedModule < self.desiredSpeedModule {
+                    self.car.physicsBody?.applyForce(SCNVector3(torque * sin(angle),0, torque * cos(angle)), asImpulse: true)
+                }
+            }
+            
         }
         
         let sequence = SCNAction.sequence([moveAction, SCNAction.wait(duration: 0.1)])
         let loop = SCNAction.repeatForever(sequence)
-//        self.scene.rootNode.runAction(loop, forKey: "moveForward")
-//        let sequence = [speedAction, SCNAction.wait(duration: cycleTime)]
-//        self.car.runAction(SCNAction.repeatForever(SCNAction.sequence(sequence)))
-//        self.car.runAction(SCNAction.repeatForever(speedAction))
-//
-//        self.car.removeAllActions()
-//
-//        let setSpeedAction = SCNAction.run({ (node) in
-//
-//            let goalSpeedX = -self.systemSpeed * sin(self.carDirection)
-//            let goalSpeedZ = -self.systemSpeed * cos(self.carDirection)
-//
-//            let currentSpeed = self.getSpeed()
-//
-//            let deltaSpeedX = goalSpeedX - currentSpeed.x
-//            let deltaSpeedZ = goalSpeedZ - currentSpeed.z
-//
-//
-//
-//            if abs(deltaSpeedX) < 0.4 {
-//                self.car.physicsBody?.velocity.x = goalSpeedX
-//            }
-//            else {
-//                self.car.physicsBody?.velocity.x += goalSpeedX / (2 * abs(goalSpeedX))
-//            }
-//
-//
-//            if abs(deltaSpeedZ) < 0.4 {
-//                self.car.physicsBody?.velocity.z = goalSpeedZ
-//            }
-//            else {
-//                self.car.physicsBody?.velocity.z += deltaSpeedZ / (2 * abs(deltaSpeedZ))
-//            }
-//        })
-//
+        self.scene.rootNode.runAction(loop, forKey: "moveForward")
     }
     
-    public func brakeTheCar() {
-        self.car.removeAllActions()
+    public func brakeTheCar(goalSpeed: Float) {
+        
+        self.scene.rootNode.removeAction(forKey: "moveForward")
+        self.scene.rootNode.removeAction(forKey: "turnCar")
+        
+        let torque: Float = 10
+        
         let brakingAction = SCNAction.run({ (node) in
-            if let speed = self.car.physicsBody?.velocity.z {
+            
+            //velocidade atual do carro
+            if let currentSpeed = self.car.physicsBody?.velocity {
+                // modulo da velocidade
+                let speedModule = sqrt(currentSpeed.x * currentSpeed.x + currentSpeed.z * currentSpeed.z)
+                // versor da velocidade atual
+                let direction = float2((currentSpeed.x / speedModule), (currentSpeed.z / speedModule))
                 
-                if abs(speed) < 0.5 {
-                    self.car.physicsBody?.velocity.z = 0
-                    self.car.removeAllActions()
-                }
-                else {
-                    
-                    self.car.physicsBody?.velocity.z = speed * 0.97
+                
+                if speedModule > goalSpeed {
+                    if abs(speedModule) < 0.1 {
+                        
+                        self.car.physicsBody?.velocity = SCNVector3(0, 0, 0)
+                        self.scene.rootNode.removeAction(forKey: "brake")
+                    }
+                    else {
+                        let force = SCNVector3((torque * -direction.x), 0, (torque * -direction.y))
+                        self.car.physicsBody?.applyForce(force, asImpulse: true)
+                    }
                 }
             }
         })
         let sequence = [brakingAction, SCNAction.wait(duration: 0.1)]
         
-        self.car.runAction(SCNAction.repeatForever(SCNAction.sequence(sequence)))
+        self.scene.rootNode.runAction(SCNAction.repeatForever(SCNAction.sequence(sequence)), forKey: "brake")
     }
     
     public func routine(block: (() -> Void)?) {
@@ -200,13 +193,14 @@ extension SceneController: NaveInterface {
     
     private func rotateSimulation(radAngle: Float, point: float2, correction: float2) -> float2 {
         
-        let x = (cos(radAngle) * point.x - sin(radAngle) * point.y) + correction.x
-        let z = (sin(radAngle) * point.x + cos(radAngle) * point.y) + correction.y
+        let x = (cos(radAngle) * point.x - sin(radAngle) * point.y)// + correction.x
+        let z = (sin(radAngle) * point.x + cos(radAngle) * point.y)// + correction.y
         
         return float2(x, z)
     }
     
-    public func turnCar(radius: Float) {
+    public func turnCar(radius: Float, angle: Float) {
+        let turnAngle = CGFloat(angle * (Float.pi / 180))
         let carAngle = self.carPivot.eulerAngles.y
         
         let origin = turnSimulation(radAngle: 0, radius: radius)
@@ -219,7 +213,6 @@ extension SceneController: NaveInterface {
         print(correction)
         
         let turnTime: TimeInterval = 3
-        let turnAngle = CGFloat(Float.pi/2)
         let torque: Float = 2
         
         self.simulationAngle = 0
@@ -231,9 +224,8 @@ extension SceneController: NaveInterface {
         let turnAction = SCNAction.run { (node) in
             
             let moved = self.turnSimulation(radAngle: self.simulationAngle, radius: radius)
-            let rotated = self.rotateSimulation(radAngle: carAngle, point: moved, correction: correction)
+            let rotated = self.rotateSimulation(radAngle: -carAngle, point: moved, correction: correction)
             print("carAngle: \((carAngle * 180) / Float.pi) | moved: \(moved) | rotated: \(rotated)")
-            print((carAngle * 180) / Float.pi)
             
             self.car.physicsBody?.applyForce(SCNVector3(torque * rotated.x, 0, torque * rotated.y), asImpulse: true)
             self.simulationAngle += (Float.pi/2) * (1/100)
@@ -245,7 +237,7 @@ extension SceneController: NaveInterface {
         let turnGroup = SCNAction.group([turnSequenceLoop, rotateAction])
         
         self.scene.rootNode.removeAction(forKey: "moveForward")
-        self.scene.rootNode.runAction(turnGroup)
+        self.scene.rootNode.runAction(turnGroup, forKey: "turnCar")
         
     }
 }

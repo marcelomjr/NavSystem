@@ -21,7 +21,7 @@ public enum CameraType: String {
 
 public protocol NaveInterface {
     func changeCamera(type: CameraType)
-    func brakeTheCar()
+    func brakeTheCar(goalSpeed: Float)
     func setSpeed(speed: Float)
     func obstacleDetected(handler: @escaping () -> Void)
     func setupFrontalRadars(limitDistance: Float)
@@ -29,5 +29,5 @@ public protocol NaveInterface {
     func hideRadars()
     func routine(block: (() -> Void)?)
     func createScene(named: String)
-    func turnCar(radius: Float)
+    func turnCar(radius: Float, angle: Float)
 }

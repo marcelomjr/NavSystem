@@ -26,59 +26,43 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "NavigationSystem/Sources/SceneController+NavInterface.swift"
-            timestampString = "544153890.125881"
+            timestampString = "544191450.1399471"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "233"
-            endingLineNumber = "233"
-            landmarkName = "turnCar(radius:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "NavigationSystem/Sources/SceneController+NavInterface.swift"
-            timestampString = "544153890.126273"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "226"
-            endingLineNumber = "226"
-            landmarkName = "turnCar(radius:)"
+            startingLineNumber = "232"
+            endingLineNumber = "232"
+            landmarkName = "turnCar(radius:angle:)"
             landmarkType = "7">
             <Locations>
                <Location
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "NavigationSystem.SceneController.turnCar(radius: Swift.Float) -&gt; ()"
+                  symbolName = "NavigationSystem.SceneController.turnCar(radius: Swift.Float, angle: Swift.Float) -&gt; ()"
                   moduleName = "NavigationSystem"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/mark3/NavSystem/NavigationSystem/Sources/SceneController+NavInterface.swift"
-                  timestampString = "544153890.225781"
+                  timestampString = "544191263.9644721"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "227"
-                  endingLineNumber = "227"
-                  offsetFromSymbolStart = "592">
+                  startingLineNumber = "232"
+                  endingLineNumber = "232"
+                  offsetFromSymbolStart = "1196">
                </Location>
                <Location
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
-                  symbolName = "closure #1 (__ObjC.SCNNode) -&gt; () in NavigationSystem.SceneController.turnCar(radius: Swift.Float) -&gt; ()"
+                  symbolName = "closure #2 (__ObjC.SCNNode) -&gt; () in NavigationSystem.SceneController.turnCar(radius: Swift.Float, angle: Swift.Float) -&gt; ()"
                   moduleName = "NavigationSystem"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/mark3/NavSystem/NavigationSystem/Sources/SceneController+NavInterface.swift"
-                  timestampString = "544153890.229355"
+                  timestampString = "544191263.96803"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "228"
-                  endingLineNumber = "228"
-                  offsetFromSymbolStart = "68">
+                  startingLineNumber = "232"
+                  endingLineNumber = "232"
+                  offsetFromSymbolStart = "1560">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -89,46 +73,14 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "NavigationSystem/Sources/SceneController+NavInterface.swift"
-            timestampString = "544154049.348127"
+            filePath = "NavigationSystem/Sources/SceneController.swift"
+            timestampString = "544191450.140573"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "240"
-            endingLineNumber = "240"
-            landmarkName = "turnCar(radius:)"
+            startingLineNumber = "123"
+            endingLineNumber = "123"
+            landmarkName = "renderer(_:updateAtTime:)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "NavigationSystem.SceneController.turnCar(radius: Swift.Float) -&gt; ()"
-                  moduleName = "NavigationSystem"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/mark3/NavSystem/NavigationSystem/Sources/SceneController+NavInterface.swift"
-                  timestampString = "544154049.3556761"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "241"
-                  endingLineNumber = "241"
-                  offsetFromSymbolStart = "1140">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #2 (__ObjC.SCNNode) -&gt; () in NavigationSystem.SceneController.turnCar(radius: Swift.Float) -&gt; ()"
-                  moduleName = "NavigationSystem"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/mark3/NavSystem/NavigationSystem/Sources/SceneController+NavInterface.swift"
-                  timestampString = "544154049.358647"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "241"
-                  endingLineNumber = "241"
-                  offsetFromSymbolStart = "1728">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

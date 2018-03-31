@@ -60,7 +60,7 @@ public class NavSystemViewController: UIViewController {
     
     public func foo() {
         self.systemInterface.routine {
-            self.systemInterface.changeCamera(type: .coneSide)
+            self.systemInterface.changeCamera(type: .upper)
 
             self.systemInterface.setSpeed(speed: 50)
             //self.systemInterface.turnCar(degreeAngle: 45)
@@ -68,7 +68,7 @@ public class NavSystemViewController: UIViewController {
             self.systemInterface.showRadars()
             
             func obstacleDetectedHandler() {
-                self.systemInterface.brakeTheCar()
+                self.systemInterface.brakeTheCar(goalSpeed: 0)
             }
             
             self.systemInterface.obstacleDetected(handler: obstacleDetectedHandler)
