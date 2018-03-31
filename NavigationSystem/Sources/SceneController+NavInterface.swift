@@ -127,7 +127,7 @@ extension SceneController: NaveInterface {
         
         let sequence = SCNAction.sequence([moveAction, SCNAction.wait(duration: 0.1)])
         let loop = SCNAction.repeatForever(sequence)
-        self.scene.rootNode.runAction(loop, forKey: "moveForward")
+//        self.scene.rootNode.runAction(loop, forKey: "moveForward")
 //        let sequence = [speedAction, SCNAction.wait(duration: cycleTime)]
 //        self.car.runAction(SCNAction.repeatForever(SCNAction.sequence(sequence)))
 //        self.car.runAction(SCNAction.repeatForever(speedAction))
@@ -207,7 +207,7 @@ extension SceneController: NaveInterface {
     }
     
     public func turnCar(radius: Float) {
-        let carAngle = self.carPivot.presentation.eulerAngles.y / (2 * Float.pi)
+        let carAngle = self.carPivot.eulerAngles.y
         
         let origin = turnSimulation(radAngle: 0, radius: radius)
         let rotatedOrigin = self.rotateSimulation(radAngle: carAngle, point: origin, correction: float2(0,0))
@@ -216,6 +216,7 @@ extension SceneController: NaveInterface {
         let deltaZ = origin.y - rotatedOrigin.y
         
         let correction = float2(deltaX, deltaZ)
+        print(correction)
         
         let turnTime: TimeInterval = 3
         let turnAngle = CGFloat(Float.pi/2)
@@ -231,8 +232,10 @@ extension SceneController: NaveInterface {
             
             let moved = self.turnSimulation(radAngle: self.simulationAngle, radius: radius)
             let rotated = self.rotateSimulation(radAngle: carAngle, point: moved, correction: correction)
+            print("carAngle: \((carAngle * 180) / Float.pi) | moved: \(moved) | rotated: \(rotated)")
+            print((carAngle * 180) / Float.pi)
             
-            self.car.physicsBody?.applyForce(SCNVector3(torque * moved.x, 0, torque * moved.y), asImpulse: true)
+            self.car.physicsBody?.applyForce(SCNVector3(torque * rotated.x, 0, torque * rotated.y), asImpulse: true)
             self.simulationAngle += (Float.pi/2) * (1/100)
             
         }

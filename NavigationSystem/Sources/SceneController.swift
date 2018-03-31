@@ -116,6 +116,7 @@ extension SceneController: SCNSceneRendererDelegate {
             
             self.updateVisorTime = 0
         }
+        
 
         self.carBox.position = self.car.presentation.position
         self.carBox.eulerAngles = self.car.presentation.eulerAngles
