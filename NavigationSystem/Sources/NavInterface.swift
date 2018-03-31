@@ -21,7 +21,7 @@ public enum CameraType: String {
 
 public protocol NaveInterface {
     func changeCamera(type: CameraType)
-    func brakeTheCar(goalSpeed: Float)
+    func brakeTheCar()
     func setSpeed(speed: Float)
     func obstacleDetected(handler: @escaping () -> Void)
     func setupFrontalRadars(limitDistance: Float)

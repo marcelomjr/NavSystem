@@ -27,7 +27,7 @@ extension SceneController: control {
         turnCar(radius: 5, angle: a)
     }
     func brake() {
-        self.brakeTheCar(goalSpeed: 0)
+        self.brakeTheCar()
     }
     func setSpeed(a: Float) {
         self.setSpeed(speed: a / self.SpeedUnit)
@@ -49,6 +49,9 @@ public class SceneController: NSObject  {
     var radarController: RadarController!
     //====================
     var cameras: [SCNNode] = [SCNNode]()
+    
+    var sounds: [String: SCNAudioSource] =  [String: SCNAudioSource]()
+    var brakingAction: SCNAction!
     
     var car: SCNNode!
     var carBox: SCNNode!
@@ -82,6 +85,64 @@ public class SceneController: NSObject  {
     
     public required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    func setupSounds() {
+        
+        let soundsName = ["braking", "runninLoop"]
+        for soundName in soundsName {
+            guard let audioSource = SCNAudioSource(fileNamed: "art.scnassets/sounds/" + soundName + ".wav") else {
+                fatalError("Error in find the sound \(soundName)")
+            }
+            
+            // Volume default de reprodução
+            audioSource.volume = 1
+            
+            // Varia com a posição
+            audioSource.isPositional = true
+            
+            // Não vai precisar pq vai fazer pro-load na memória
+            audioSource.shouldStream = false
+            
+            // Carrega o audio na memoria
+            audioSource.load()
+            
+            // Adiciona o audioSource ao dicionário
+            self.sounds[soundName] = audioSource
+        }
+        
+        
+    }
+    
+    func setupActions() {
+        guard let sound = self.sounds["braking"] else {
+            print("Error sound")
+            return
+        }
+        let soundAction = SCNAction.playAudio(sound, waitForCompletion: false)
+        
+        let brakingAction = SCNAction.run({ (node) in
+            let angle = -self.car.eulerAngles.y
+            
+            if let currentSpeed = self.car.physicsBody?.velocity {
+                let speedModule = sqrt(currentSpeed.x * currentSpeed.x + currentSpeed.z * currentSpeed.z)
+                if abs(speedModule) < 0.5 {
+                    self.car.physicsBody?.velocity = SCNVector3(0, 0, 0)
+                    self.car.removeAction(forKey: "braking")
+                }
+                else {
+                    let newSpeed = speedModule * 0.995
+                    let velocity = SCNVector3(newSpeed * sin(angle), 0, newSpeed * cos(angle))
+                    self.car.physicsBody?.velocity = velocity
+                }
+                
+            }
+        })
+        let sequence = [brakingAction, SCNAction.wait(duration: 0.1)]
+        let repeateSequence = SCNAction.repeatForever(SCNAction.sequence(sequence))
+        
+        let group = [soundAction, repeateSequence]
+        self.brakingAction = SCNAction.group(group)
+        
     }
     
     
@@ -122,8 +183,8 @@ extension SceneController: SCNSceneRendererDelegate {
             overlay.angle.text = String(self.car.eulerAngles.y * (180/Float.pi))
             
             self.updateVisorTime = 0
+            
         }
-        
 
         self.carBox.position = self.car.presentation.position
         self.carBox.eulerAngles = self.car.presentation.eulerAngles

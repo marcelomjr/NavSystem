@@ -40,6 +40,8 @@ extension SceneController: NaveInterface {
         self.scnView.overlaySKScene = skScene
         
         self.setupSensors()
+        self.setupSounds()
+        self.setupActions()
         
         if self.routineBlock == nil {
             self.defaultInitialization()
@@ -84,14 +86,13 @@ extension SceneController: NaveInterface {
     public func setSpeed(speed: Float) {
         
         self.car.removeAllActions()
-        let angle = -self.car.eulerAngles.y
-        
+        let angle = self.car.eulerAngles.y
+        print(angle * (180 / Float.pi))
         let setSpeedAction = SCNAction.run({ (node) in
             
             if let currentSpeed = self.car.physicsBody?.velocity {
                 let speedModule = sqrt(currentSpeed.x * currentSpeed.x + currentSpeed.z * currentSpeed.z)
                 let deltaV = speed - speedModule
-                print(deltaV)
                 
                 if abs(deltaV) < 0.5 {
                     let velocity = SCNVector3(speed * sin(angle), 0, speed * cos(angle))
@@ -99,50 +100,26 @@ extension SceneController: NaveInterface {
                 }
                 else {
                     let newSpeed = deltaV / (2 * abs(deltaV))
-                    self.car.physicsBody?.velocity.z += newSpeed * cos(angle)
                     self.car.physicsBody?.velocity.x += newSpeed * sin(angle)
+                    self.car.physicsBody?.velocity.z += newSpeed * cos(angle)
+                    
                 }
             }
         })
         
         let sequence = [setSpeedAction, SCNAction.wait(duration: 0.05)]
         let loopAction = SCNAction.repeatForever(SCNAction.sequence(sequence))
-        self.scene.rootNode.runAction(loopAction, forKey: "moveForward")
+        self.car.runAction(loopAction, forKey: "moveForward")
     }
     
-    public func brakeTheCar(goalSpeed: Float) {
+    public func brakeTheCar() {
         
-        self.scene.rootNode.removeAction(forKey: "moveForward")
-        self.scene.rootNode.removeAction(forKey: "turnCar")
+        if self.car.actionKeys.contains("braking") {
+            return
+        }
+        self.car.removeAction(forKey: "moveForward")
         
-        let torque: Float = 10
-        
-        let brakingAction = SCNAction.run({ (node) in
-            
-            //velocidade atual do carro
-            if let currentSpeed = self.car.physicsBody?.velocity {
-                // modulo da velocidade
-                let speedModule = sqrt(currentSpeed.x * currentSpeed.x + currentSpeed.z * currentSpeed.z)
-                // versor da velocidade atual
-                let direction = float2((currentSpeed.x / speedModule), (currentSpeed.z / speedModule))
-                
-                
-                if speedModule > goalSpeed {
-                    if abs(speedModule) < 0.1 {
-                        
-                        self.car.physicsBody?.velocity = SCNVector3(0, 0, 0)
-                        self.scene.rootNode.removeAction(forKey: "brake")
-                    }
-                    else {
-                        let force = SCNVector3((torque * -direction.x), 0, (torque * -direction.y))
-                        self.car.physicsBody?.applyForce(force, asImpulse: true)
-                    }
-                }
-            }
-        })
-        let sequence = [brakingAction, SCNAction.wait(duration: 0.1)]
-        
-        self.scene.rootNode.runAction(SCNAction.repeatForever(SCNAction.sequence(sequence)), forKey: "brake")
+        self.car.runAction(self.brakingAction, forKey: "braking")
     }
     
     public func routine(block: (() -> Void)?) {
@@ -208,8 +185,8 @@ extension SceneController: NaveInterface {
         
         let turnGroup = SCNAction.group([turnSequenceLoop, rotateAction])
         
-        self.scene.rootNode.removeAction(forKey: "moveForward")
-        self.scene.rootNode.runAction(turnGroup, forKey: "turnCar")
+        self.car.removeAction(forKey: "moveForward")
+        self.car.runAction(turnGroup, forKey: "turnCar")
         
     }
 }

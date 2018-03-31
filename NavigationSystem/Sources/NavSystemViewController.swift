@@ -68,7 +68,7 @@ public class NavSystemViewController: UIViewController {
             self.systemInterface.showRadars()
             
             func obstacleDetectedHandler() {
-                self.systemInterface.brakeTheCar(goalSpeed: 0)
+                self.systemInterface.brakeTheCar()
             }
             
             self.systemInterface.obstacleDetected(handler: obstacleDetectedHandler)
