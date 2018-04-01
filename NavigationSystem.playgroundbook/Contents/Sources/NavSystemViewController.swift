@@ -29,8 +29,8 @@ public class NavSystemViewController: UIViewController {
         self.sceneController = SceneController(scnView: scnView)
         
         scnView.showsStatistics = true
-        //        scnView.allowsCameraControl = true
-//        scnView.debugOptions = SCNDebugOptions.showPhysicsShapes
+                scnView.allowsCameraControl = true
+        scnView.debugOptions = SCNDebugOptions.showPhysicsShapes
         
         self.systemInterface = self.sceneController
         
@@ -58,24 +58,21 @@ public class NavSystemViewController: UIViewController {
         // Release any cached data, images, etc that aren't in use.
     }
     
-    public func foo() {
-        self.systemInterface.routine {
+    public func page1() {
             self.systemInterface.changeCamera(type: .upper)
-            self.systemInterface.setSpeed(speed: 10)
-            //self.systemInterface.turnCar(degreeAngle: 45)
-            self.systemInterface.setupFrontalRadars(limitDistance: 7)
-            self.systemInterface.showRadars()
-            
+
+        self.systemInterface.setSpeed(goalSpeed: 70)
+            self.systemInterface.setupFrontalRadars(limitDistance: 10)
+//            self.systemInterface.showRadars()
+        
             func obstacleDetectedHandler() {
                 self.systemInterface.brakeTheCar()
             }
             
             self.systemInterface.obstacleDetected(handler: obstacleDetectedHandler)
-        }
     }
     public func playground() {
-        foo()
-        self.systemInterface.createScene(named: "art.scnassets/Chapter1.scn")
+        page1()
         
     }
     

@@ -7,6 +7,26 @@ let viewController = NavSystemViewController()
 PlaygroundSupport.PlaygroundPage.current.liveView = viewController
 
 let navSystem = viewController.systemInterface!
+
+
+navSystem.setupFrontalRadars(limitDistance: 10)
+navSystem.showRadars()
+
+public func setupCamera(type: CameraType) {
+    
+    navSystem.changeCamera(type: type)
+}
+
+public func brakeTheCar() {
+    navSystem.brakeTheCar()
+}
+
+public func setSpeedControl(speed: Float) {
+    navSystem.setSpeed(goalSpeed: speed)
+}
+
+
+
 //#-end-hidden-code
 /*:
  # First Sensor: Radar
@@ -26,30 +46,27 @@ let navSystem = viewController.systemInterface!
  2. navSystem.brakeTheCar(): Aciona os freios do veículo.
  
  */
-navSystem.routine {
-    
-    //#-code-completion(literal, show, array, boolean)
-    //#-code-completion(keyword, hide, var)
-    //#-code-completion(keyword, show, for, if)
-    //#-editable-code Tap to write your code
-    //#-end-editable-code
-    
-    //#-code-completion(everything, hide)
-    //#-code-completion(identifier, show, upper, frontal, diagonal, initialCamera, coneSide, coneProfile)
-    navSystem.changeCamera(type: /*#-editable-code */.upper/*#-end-editable-code*/)
+
+func setupSystem() {
+    setupCamera(type: /*#-editable-code */.upper/*#-end-editable-code*/)
     
     
-    //#-code-completion(everything, hide)
-    navSystem.setSpeed(speed: /*#-editable-code */50/*#-end-editable-code*/)
+    setSpeedControl(speed: /*#-editable-code */50/*#-end-editable-code*/)
     
 }
 
+navSystem.routine(block: setupSystem)
 
-navSystem.obstacleDetected {
-    navSystem.brakeTheCar()
-}
 
-//#-hidden-code
+//navSystem.obstacleDetected {
+//    navSystem.brakeTheCar()
+//}
+//
 
-navSystem.createScene(named: "art.scnassets/Chapter1.scn")
-//#-end-hidden-code
+
+
+
+
+
+
+

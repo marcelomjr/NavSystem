@@ -9,43 +9,6 @@ import SceneKit
 
 extension SceneController: NaveInterface {
     
-    public func createScene(named: String) {
-        
-        self.scene = SCNScene(named: named)
-        self.scnView.scene = self.scene
-        self.scene?.physicsWorld.contactDelegate = self
-        
-        self.car = self.scene?.rootNode.childNode(withName: "carModel", recursively: true)
-        self.carBox = self.scene?.rootNode.childNode(withName: "carBox", recursively: true)
-        
-        if let cameras = self.scene?.rootNode.childNode(withName: "cameras", recursively: true)?.childNodes {
-            self.cameras = cameras
-        }
-        if let extraCameras = self.scene?.rootNode.childNode(withName: "extraCameras", recursively: true)?.childNodes {
-            self.cameras.append(contentsOf: extraCameras)
-        }
-        
-        self.changeCamera(type: .initialCamera)
-        
-        
-        let skScene = Overlay(fileNamed: "art.scnassets/overlay.sks")!
-        skScene.scaleMode = .aspectFit
-        skScene.controlDelegate = self
-        self.scnView.overlaySKScene = skScene
-        
-        self.setupSensors()
-        
-        if self.routineBlock == nil {
-            self.defaultInitialization()
-        }
-        else {
-            self.routineBlock!()
-        }
-    }
-    
-   
-    
-    
     public func showRadars() {
         self.radarController.showFrontalRadars()
     }
@@ -72,77 +35,180 @@ extension SceneController: NaveInterface {
         }
     }
     
-    public func setSpeed(speed: Float) {
+   
+    
+    
+    public func setSpeed(goalSpeed: Float) {
+        let speed = goalSpeed / self.SpeedUnit
+        self.definedSpeed = speed
         self.car.removeAllActions()
-        let trueSpeed = speed / 18 //km/h
+        let angle = self.car.eulerAngles.y
         
-        // velocidade atual pretendida
-        self.systemSpeed = trueSpeed
-      
         let setSpeedAction = SCNAction.run({ (node) in
             
-            let goalSpeedX = self.systemSpeed * sin(self.carDirection)
-            let goalSpeedZ = -self.systemSpeed * cos(self.carDirection)
-
-            let currentSpeed = self.getSpeed()
-            
-            let deltaSpeedX = -(goalSpeedX - currentSpeed.x)
-            let deltaSpeedZ = goalSpeedZ - currentSpeed.z
-            
-            
-            
-            if abs(deltaSpeedX) < 0.4 {
-                self.car.physicsBody?.velocity.x = goalSpeedX
-            }
-            else {
-                self.car.physicsBody?.velocity.x += goalSpeedX / (2 * abs(goalSpeedX))
-                print(self.car.physicsBody?.velocity.x)
-            }
-            
-            
-            if abs(deltaSpeedZ) < 0.4 {
-                self.car.physicsBody?.velocity.z = goalSpeedZ
-            }
-            else {
-                self.car.physicsBody?.velocity.z += deltaSpeedZ / (2 * abs(deltaSpeedZ))
+            if let currentSpeed = self.car.physicsBody?.velocity {
+                
+                let speedModule = sqrt(currentSpeed.x * currentSpeed.x + currentSpeed.z * currentSpeed.z)
+                
+                let deltaV = speed - speedModule
+                
+                if abs(deltaV) < 0.5 {
+                    let velocity = SCNVector3(speed * sin(angle), 0, speed * cos(angle))
+                    self.car.physicsBody?.velocity = velocity
+                }
+                else {
+                    let newSpeed = deltaV / (2 * abs(deltaV))
+                    
+                    self.car.physicsBody?.velocity.x += newSpeed * sin(angle)
+                    self.car.physicsBody?.velocity.z += newSpeed * cos(angle)
+                }
             }
         })
         
         let sequence = [setSpeedAction, SCNAction.wait(duration: 0.05)]
-        
-        self.car.runAction(SCNAction.repeatForever(SCNAction.sequence(sequence)))
+        let loopAction = SCNAction.repeatForever(SCNAction.sequence(sequence))
+        self.car.runAction(loopAction, forKey: "moveForward")
     }
     
     public func brakeTheCar() {
-        self.car.removeAllActions()
-        let brakingAction = SCNAction.run({ (node) in
-            if let speed = self.car.physicsBody?.velocity.z {
-                
-                if abs(speed) < 0.5 {
-                    self.car.physicsBody?.velocity.z = 0
-                    self.car.removeAllActions()
-                }
-                else {
-                    
-                    self.car.physicsBody?.velocity.z = speed * 0.97
-                }
-            }
-        })
-        let sequence = [brakingAction, SCNAction.wait(duration: 0.1)]
         
-        self.car.runAction(SCNAction.repeatForever(SCNAction.sequence(sequence)))
+        if self.car.actionKeys.contains("braking") {
+            return
+        }
+        
+        self.state = .braking
+            
+        self.car.removeAction(forKey: "moveForward")
+        
+        self.car.runAction(self.brakingAction, forKey: "braking")
     }
     
     public func routine(block: (() -> Void)?) {
         self.routineBlock = block
     }
+
     
-    public func turnCar(degreeAngle: Float) {
-        let angle = degreeAngle * Float.pi / 180
-       
-        self.carDirection = angle
-        let mesh = self.car.childNodes[0]
-        mesh.runAction(SCNAction.rotateTo(x: 0, y: CGFloat(-angle), z: 0, duration: 0.5))
+    private func turnSimulation(radAngle: Float, radius: Float) -> float2 {
+        let angle = Float.pi - radAngle
+        
+        let x = radius * sin(angle)
+        let z = -radius * cos(angle)
+        
+        return float2(x, z)
+    }
+    private func positionFunction(radAngle: Float, radius: Float, correction: float2, side: Side) -> float2 {
+        let angle = Float.pi - radAngle
+        
+        var x: Float
+        
+        // correcao de lado de virada
+        if side == Side.right {
+            x = -radius - (radius + radius * cos(angle))
+        }
+        else {
+            x = radius * cos(angle)
+        }
+        x += correction.x
+        
+        let z = radius * sin(angle) + correction.y
+        
+        return float2(x, z)
+    }
+    
+    private func rotateSimulation(radAngle: Float, point: float2, correction: float2) -> float2 {
+        
+        let x = (cos(radAngle) * point.x - sin(radAngle) * point.y) + correction.x
+        let z = (sin(radAngle) * point.x + cos(radAngle) * point.y) + correction.y
+        
+        return float2(x, z)
+    }
+    
+     public func turnCar(radius: Float, side: Side, angle: Float) {
+        
+        if self.car.actionKeys.contains("turnCar") {
+            return
+        }
+        
+        if self.car.actionKeys.contains("braking") {
+            return
+        }
+        
+        let loopTimes: Float = 100
+        
+        self.state = .turning
+        self.car.removeAction(forKey: "moveForward")
+        self.car.removeAction(forKey: "turnCar")
+        // para o carro, ver se e necessario mesmo
+//        self.car.physicsBody?.velocity = SCNVector3(0,0,0)
+        
+        
+        
+        let turnAngle = angle * (Float.pi / 180)
+        
+        // angulacao inicial do carro
+        let carAngle = self.car.eulerAngles.y
+        
+        // start position
+        let currentPosition = self.car.presentation.position
+        
+        let positionCorrection = float2((currentPosition.x  + radius), currentPosition.z)
+//        print("positionCorrection: \(positionCorrection)")
+        
+        let origin = self.positionFunction(radAngle: 0, radius: radius, correction: positionCorrection, side: side)
+        let rotatedOrigin = self.rotateSimulation(radAngle: -carAngle, point: origin, correction: float2(0,0))
+//        print("origin: \(origin)")
+//        print("rotatedOrigin: \(rotatedOrigin)")
+        
+        let deltaX = origin.x - rotatedOrigin.x
+        let deltaZ = origin.y - rotatedOrigin.y
+        
+        let rotationCorrection = float2(deltaX, deltaZ)
+//        print("rotationCorrection: \(rotationCorrection)")
+        
+        
+        let turnTime: TimeInterval = 1
+        self.simulationAngle = 0
+        
+        
+        let turnAction = SCNAction.run { _ in
+            
+            var newPosition = self.positionFunction(radAngle: self.simulationAngle, radius: radius, correction: positionCorrection, side: side)
+            
+            let rotatedPosition = self.rotateSimulation(radAngle: -carAngle, point: newPosition, correction: rotationCorrection)
+
+            
+            self.car.position.x = rotatedPosition.x
+            self.car.position.z = rotatedPosition.y
+            
+            if side == .left {
+ 
+//                print("\(self.car.eulerAngles.y)  \(self.car.presentation.eulerAngles.y)")
+                self.car.eulerAngles.y += turnAngle * (1 / loopTimes)
+            }
+            else {
+                self.car.eulerAngles.y += -turnAngle * (1 / loopTimes)
+            }
+            print("virando")
+            self.simulationAngle += turnAngle * (1 / loopTimes)
+            
+        }
+        
+        let afterTurn = SCNAction.run { _ in
+            let speed = self.definedSpeed * self.SpeedUnit
+            self.car.physicsBody?.velocity = SCNVector3(0,0,0)
+            self.state = .running
+        }
+        
+        let waitTime = turnTime / TimeInterval(loopTimes)
+        let sequence = SCNAction.sequence([turnAction, SCNAction.wait(duration: waitTime)])
+        let turnSequenceLoop = SCNAction.repeat(sequence, count: Int(loopTimes))
+
+        // para evitar resetar a aplicacao da forca
+//        self.car.transform = self.car.presentation.transform
+        let turnSequence = SCNAction.sequence([turnSequenceLoop, afterTurn])
+        self.car.runAction(turnSequence, forKey: "turnCar")
+        
     }
 }
+
 
