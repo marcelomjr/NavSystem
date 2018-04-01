@@ -64,8 +64,8 @@ public class NavSystemViewController: UIViewController {
 
 //            self.systemInterface.setSpeed(speed: 50)
             //self.systemInterface.turnCar(degreeAngle: 45)
-            self.systemInterface.setupFrontalRadars(limitDistance: 7)
-            self.systemInterface.showRadars()
+//            self.systemInterface.setupFrontalRadars(limitDistance: 7)
+//            self.systemInterface.showRadars()
             
             func obstacleDetectedHandler() {
                 self.systemInterface.brakeTheCar()

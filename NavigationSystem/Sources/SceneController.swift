@@ -121,19 +121,21 @@ public class SceneController: NSObject  {
         }
         let soundAction = SCNAction.playAudio(sound, waitForCompletion: false)
         
-        let brakingAction = SCNAction.run({ (node) in
-            let angle = -self.car.eulerAngles.y
+        let brakingAction = SCNAction.run({ _ in
+            
             
             if let currentSpeed = self.car.physicsBody?.velocity {
                 let speedModule = sqrt(currentSpeed.x * currentSpeed.x + currentSpeed.z * currentSpeed.z)
+                
                 if abs(speedModule) < 0.5 {
                     self.car.physicsBody?.velocity = SCNVector3(0, 0, 0)
                     self.car.removeAction(forKey: "braking")
                 }
                 else {
-                    let newSpeed = speedModule * 0.995
-                    let velocity = SCNVector3(newSpeed * sin(angle), 0, newSpeed * cos(angle))
-                    self.car.physicsBody?.velocity = velocity
+                    let brakingRate = 0.995
+                    
+                    self.car.physicsBody?.velocity.x *= 0.995
+                    self.car.physicsBody?.velocity.z *= 0.995
                 }
                 
             }

@@ -156,67 +156,78 @@ extension SceneController: NaveInterface {
     
     private func rotateSimulation(radAngle: Float, point: float2, correction: float2) -> float2 {
         
-        let x = (cos(radAngle) * point.x - sin(radAngle) * point.y)// + correction.x
-        let z = (sin(radAngle) * point.x + cos(radAngle) * point.y)// + correction.y
+        let x = (cos(radAngle) * point.x - sin(radAngle) * point.y) + correction.x
+        let z = (sin(radAngle) * point.x + cos(radAngle) * point.y) + correction.y
         
         return float2(x, z)
     }
     
      public func turnCar(radius: Float, side: Side, angle: Float) {
+        let loopTimes: Float = 100
+        
+        self.car.removeAction(forKey: "moveForward")
+        
+        // para o carro, ver se e necessario mesmo
+//        self.car.physicsBody?.velocity = SCNVector3(0,0,0)
+        
+        
+        
         let turnAngle = angle * (Float.pi / 180)
+        
+        // angulacao inicial do carro
         let carAngle = self.car.eulerAngles.y
         
+        // start position
         let currentPosition = self.car.presentation.position
-        print("position: \(currentPosition)")
-        let positionCorrection = float2((currentPosition.x  + radius), currentPosition.z)
-        print("positionCorrection: \(positionCorrection)")
         
-        self.car.physicsBody?.velocity = SCNVector3(0,0,0)
-        let origin = turnSimulation(radAngle: 0, radius: radius)
-        let rotatedOrigin = self.rotateSimulation(radAngle: carAngle, point: origin, correction: float2(0,0))
+        let positionCorrection = float2((currentPosition.x  + radius), currentPosition.z)
+//        print("positionCorrection: \(positionCorrection)")
+        
+        let origin = self.positionFunction(radAngle: 0, radius: radius, correction: positionCorrection, side: side)
+        let rotatedOrigin = self.rotateSimulation(radAngle: -carAngle, point: origin, correction: float2(0,0))
+//        print("origin: \(origin)")
+//        print("rotatedOrigin: \(rotatedOrigin)")
         
         let deltaX = origin.x - rotatedOrigin.x
         let deltaZ = origin.y - rotatedOrigin.y
         
-        let correction = float2(deltaX, deltaZ)
-        print(correction)
+        let rotationCorrection = float2(deltaX, deltaZ)
+//        print("rotationCorrection: \(rotationCorrection)")
+        
         
         let turnTime: TimeInterval = 3
-        
         self.simulationAngle = 0
         
         
-        let turnAction = SCNAction.run { (node) in
+        let turnAction = SCNAction.run { _ in
+            
             var newPosition = self.positionFunction(radAngle: self.simulationAngle, radius: radius, correction: positionCorrection, side: side)
             
+            let rotatedPosition = self.rotateSimulation(radAngle: -carAngle, point: newPosition, correction: rotationCorrection)
+
             
-//            let rotated = self.rotateSimulation(radAngle: carAngle, point: position, correction: <#T##float2#>)
+            self.car.position.x = rotatedPosition.x
+            self.car.position.z = rotatedPosition.y
             
-            
-            
-            self.car.position.x = newPosition.x
-            self.car.position.z = newPosition.y
             if side == .left {
-                self.car.eulerAngles.y += turnAngle * (1/100)
+ 
+                print("\(self.car.eulerAngles.y)  \(self.car.presentation.eulerAngles.y)")
+                self.car.eulerAngles.y += turnAngle * (1 / loopTimes)
             }
             else {
-                self.car.eulerAngles.y += -turnAngle * (1/100)
+                self.car.eulerAngles.y += -turnAngle * (1 / loopTimes)
             }
-            print(newPosition)
             
-            self.simulationAngle += turnAngle * (1/100)
+            self.simulationAngle += turnAngle * (1 / loopTimes)
             
         }
         
-        let waitTime = TimeInterval(turnTime / 100)
+        let waitTime = turnTime / TimeInterval(loopTimes)
         let sequence = SCNAction.sequence([turnAction, SCNAction.wait(duration: waitTime)])
-        let turnSequenceLoop = SCNAction.repeat(sequence, count: 100)
-        
-        self.car.removeAction(forKey: "moveForward")
-        
-        
+        let turnSequenceLoop = SCNAction.repeat(sequence, count: Int(loopTimes))
+
         // para evitar resetar a aplicacao da forca
-        self.car.transform = self.car.presentation.transform
+//        self.car.transform = self.car.presentation.transform
         
         self.car.runAction(turnSequenceLoop, forKey: "turnCar")
         
