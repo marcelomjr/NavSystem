@@ -22,7 +22,7 @@ class Overlay: SKScene {
     override func didMove(to view: SKView) {
         self.initialize()
         
-        self.left = self.childNode(withName: "left") as! SKSpriteNode
+       /* self.left = self.childNode(withName: "left") as! SKSpriteNode
         self.left.isUserInteractionEnabled = true
         
         self.speedNode = self.childNode(withName: "speedbutton") as! SKSpriteNode
@@ -32,16 +32,16 @@ class Overlay: SKScene {
         self.right.isUserInteractionEnabled = true
         
         self.brake = self.childNode(withName: "brake") as! SKSpriteNode
-        self.brake.isUserInteractionEnabled = true
+        self.brake.isUserInteractionEnabled = true*/
     }
     
     func initialize() {
        self.speedLabel = self.childNode(withName: "speed") as! SKLabelNode
-        self.angle = self.childNode(withName: "angle") as! SKLabelNode
+        //self.angle = self.childNode(withName: "angle") as! SKLabelNode
     }
 
 }
-
+/*
 extension SKSpriteNode {
     override open func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let radius: Float = 10
@@ -60,4 +60,4 @@ extension SKSpriteNode {
             }
         }
     }
-}
+}*/

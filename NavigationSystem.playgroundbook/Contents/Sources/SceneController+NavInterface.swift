@@ -9,6 +9,10 @@ import SceneKit
 
 extension SceneController: NaveInterface {
     
+    public func start() {
+        self.routineBlock?()
+    }
+    
     public func showRadars() {
         self.radarController.showFrontalRadars()
     }
@@ -72,7 +76,7 @@ extension SceneController: NaveInterface {
     
     public func brakeTheCar() {
         
-        if self.car.actionKeys.contains("braking") {
+        if state == .braking {
             return
         }
         

@@ -65,6 +65,9 @@ public class SceneController: NSObject  {
     var car: SCNNode!
     var carBox: SCNNode!
     
+    var page1Node: SCNNode!
+    var page2Node: SCNNode!
+    var page3Node: SCNNode!
     
     public var scnView: SCNView!
     public var scene: SCNScene!
@@ -87,13 +90,21 @@ public class SceneController: NSObject  {
         self.scene?.physicsWorld.contactDelegate = self
         
         guard let car = self.scene?.rootNode.childNode(withName: "carModel", recursively: true),
-            let carBox = self.scene?.rootNode.childNode(withName: "carBox", recursively: true) else
+            let carBox = self.scene?.rootNode.childNode(withName: "carBox", recursively: true),
+            let page1Node = self.scene?.rootNode.childNode(withName: "page1", recursively: true),
+            let page2Node = self.scene?.rootNode.childNode(withName: "page2", recursively: true),
+            let page3Node = self.scene?.rootNode.childNode(withName: "page3", recursively: true)
+            else
         {
             print("Error in get objects")
             return
         }
+        
         self.car = car
         self.carBox = carBox
+        self.page1Node = page1Node
+        self.page2Node = page2Node
+        self.page3Node = page3Node
         
         if let cameras = self.scene?.rootNode.childNode(withName: "cameras", recursively: true)?.childNodes {
             self.cameras = cameras
@@ -158,6 +169,10 @@ public class SceneController: NSObject  {
             self.sounds[soundName] = audioSource
         }
         
+        
+    }
+    
+    public func setupPage1() {
         
     }
     

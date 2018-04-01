@@ -245,7 +245,7 @@ extension SceneController: SCNSceneRendererDelegate {
             
             let overlay = self.scnView.overlaySKScene as! Overlay
             overlay.speedLabel.text = formatedSpeed
-            overlay.angle.text = String(self.car.eulerAngles.y * (180/Float.pi))
+            //overlay.angle.text = String(self.car.eulerAngles.y * (180/Float.pi))
             
             self.updateVisorTime = 0
             

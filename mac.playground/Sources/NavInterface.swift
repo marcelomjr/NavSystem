@@ -35,4 +35,5 @@ public protocol NaveInterface {
     func routine(block: (() -> Void)?)
     func turnCar(radius: Float, side: Side, angle: Float)
     func start()
+    func setupPage1()
 }

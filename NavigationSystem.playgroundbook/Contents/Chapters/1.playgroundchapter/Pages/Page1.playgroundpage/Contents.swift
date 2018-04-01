@@ -1,72 +1,11 @@
-//#-hidden-code
-import PlaygroundSupport
-import UIKit
-
-let viewController = NavSystemViewController()
-
-PlaygroundSupport.PlaygroundPage.current.liveView = viewController
-
-let navSystem = viewController.systemInterface!
-
-
-navSystem.setupFrontalRadars(limitDistance: 10)
-navSystem.showRadars()
-
-public func setupCamera(type: CameraType) {
-    
-    navSystem.changeCamera(type: type)
-}
-
-public func brakeTheCar() {
-    navSystem.brakeTheCar()
-}
-
-public func setSpeedControl(speed: Float) {
-    navSystem.setSpeed(goalSpeed: speed)
-}
-
-
-
-//#-end-hidden-code
 /*:
- # First Sensor: Radar
+ # Autonomous cars
  
- An autonomous car must first and foremost be **safe** for its passengers and for the people near the car.
+The development of autonomous cars is currently growing.
  
- So now your task is to ensure that if a person or obstacle is in the in the car path it will stop before the impact.
+This can be explained by the advantages of using such vehicle, after all about 90% of automobile accidents are caused by human failure!
  
- For **low speeds** we will use the Radar (Radio Detection And Ranging) sensor.
+Thus it would be possible to save the lives of millions of people every year, plus the time devoted to driving can be utilized for numerous other purposes.
  
- Radar is a device that allows you to detect distant objects and infer their distances.
- 
- Mas para isso você irá precisar saber como controlar o carro, por enquanto use essas duas funções de nossa biblioteca:
- 
- 1. navSystem.setSpeed(speed: floatValue): O sistema irá acelerar o carro até atingir a velocidade definida.
- 
- 2. navSystem.brakeTheCar(): Aciona os freios do veículo.
- 
- */
-
-func setupSystem() {
-    setupCamera(type: /*#-editable-code */.upper/*#-end-editable-code*/)
-    
-    
-    setSpeedControl(speed: /*#-editable-code */50/*#-end-editable-code*/)
-    
-}
-
-navSystem.routine(block: setupSystem)
-
-
-//navSystem.obstacleDetected {
-//    navSystem.brakeTheCar()
-//}
-//
-
-
-
-
-
-
-
-
+ How about knowing more about how they work?
+*/

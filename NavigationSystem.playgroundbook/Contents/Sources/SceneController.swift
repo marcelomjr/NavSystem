@@ -65,6 +65,9 @@ public class SceneController: NSObject  {
     var car: SCNNode!
     var carBox: SCNNode!
     
+    var page1Node: SCNNode!
+    var page2Node: SCNNode!
+    var page3Node: SCNNode!
     
     public var scnView: SCNView!
     public var scene: SCNScene!
@@ -78,7 +81,6 @@ public class SceneController: NSObject  {
         
 
         self.createScene()
-        self.routineBlock?()
     }
     
     public func createScene() {
@@ -88,13 +90,21 @@ public class SceneController: NSObject  {
         self.scene?.physicsWorld.contactDelegate = self
         
         guard let car = self.scene?.rootNode.childNode(withName: "carModel", recursively: true),
-            let carBox = self.scene?.rootNode.childNode(withName: "carBox", recursively: true) else
+            let carBox = self.scene?.rootNode.childNode(withName: "carBox", recursively: true),
+            let page1Node = self.scene?.rootNode.childNode(withName: "page1", recursively: true),
+            let page2Node = self.scene?.rootNode.childNode(withName: "page2", recursively: true),
+            let page3Node = self.scene?.rootNode.childNode(withName: "page3", recursively: true)
+            else
         {
             print("Error in get objects")
             return
         }
+        
         self.car = car
         self.carBox = carBox
+        self.page1Node = page1Node
+        self.page2Node = page2Node
+        self.page3Node = page3Node
         
         if let cameras = self.scene?.rootNode.childNode(withName: "cameras", recursively: true)?.childNodes {
             self.cameras = cameras
@@ -102,8 +112,6 @@ public class SceneController: NSObject  {
         if let extraCameras = self.scene?.rootNode.childNode(withName: "extraCameras", recursively: true)?.childNodes {
             self.cameras.append(contentsOf: extraCameras)
         }
-        
-        self.changeCamera(type: .initialCamera)
         
         
         let skScene = Overlay(fileNamed: "art.scnassets/overlay.sks")!
@@ -159,6 +167,10 @@ public class SceneController: NSObject  {
             self.sounds[soundName] = audioSource
         }
         
+        
+    }
+    
+    public func setupPage1() {
         
     }
     
@@ -246,15 +258,15 @@ extension SceneController: SCNSceneRendererDelegate {
             
             let overlay = self.scnView.overlaySKScene as! Overlay
             overlay.speedLabel.text = formatedSpeed
-            overlay.angle.text = String(self.car.eulerAngles.y * (180/Float.pi))
+//            overlay.angle.text = String(self.car.eulerAngles.y * (180/Float.pi))
             
             self.updateVisorTime = 0
             
         }
-        if self.state == .running && self.car.actionKeys.count == 0 {
-            let speed = self.definedSpeed * self.SpeedUnit
-            self.setSpeed(goalSpeed: speed)
-        }
+//        if self.state == .running && self.car.actionKeys.count == 0 {
+//            let speed = self.definedSpeed * self.SpeedUnit
+//            self.setSpeed(goalSpeed: speed)
+//        }
         self.carBox.position = self.car.presentation.position
         self.carBox.eulerAngles = self.car.eulerAngles
     }
@@ -262,15 +274,15 @@ extension SceneController: SCNSceneRendererDelegate {
 extension SceneController: SCNPhysicsContactDelegate {
     
     public func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
-        if contact.nodeA.name == "lateralLimit"  {
-            self.followHandler(limit: contact.nodeA)
-        }
-        else if contact.nodeB.name == "lateralLimit" {
-            self.followHandler(limit: contact.nodeB)
-        }
-        else if contact.nodeA.name == "corner" || contact.nodeB.name == "corner" {
-            self.turnCar(radius: 12, side: .right, angle: 90)
-        }
+//        if contact.nodeA.name == "lateralLimit"  {
+//            self.followHandler(limit: contact.nodeA)
+//        }
+//        else if contact.nodeB.name == "lateralLimit" {
+//            self.followHandler(limit: contact.nodeB)
+//        }
+//        else if contact.nodeA.name == "corner" || contact.nodeB.name == "corner" {
+//            self.turnCar(radius: 12, side: .right, angle: 90)
+//        }
         
     }
     

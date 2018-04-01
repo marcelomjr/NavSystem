@@ -48,7 +48,7 @@ public func setSpeedControl(speed: Float) {
  */
 
 func setupSystem() {
-    setupCamera(type: /*#-editable-code */.upper/*#-end-editable-code*/)
+    setupCamera(type: /*#-editable-code */.diagonal/*#-end-editable-code*/)
     
     
     setSpeedControl(speed: /*#-editable-code */50/*#-end-editable-code*/)

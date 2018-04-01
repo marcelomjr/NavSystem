@@ -34,4 +34,6 @@ public protocol NaveInterface {
     func hideRadars()
     func routine(block: (() -> Void)?)
     func turnCar(radius: Float, side: Side, angle: Float)
+    func start()
+    func setupPage1()
 }
