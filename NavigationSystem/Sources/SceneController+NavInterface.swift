@@ -9,51 +9,6 @@ import SceneKit
 
 extension SceneController: NaveInterface {
     
-    public func createScene(named: String) {
-        
-        self.scene = SCNScene(named: named)
-        self.scnView.scene = self.scene
-        self.scene?.physicsWorld.contactDelegate = self
-        
-        guard let car = self.scene?.rootNode.childNode(withName: "carModel", recursively: true),
-        let carBox = self.scene?.rootNode.childNode(withName: "carBox", recursively: true) else
-        {
-            print("Error in get objects")
-            return
-        }
-        self.car = car
-        self.carBox = carBox
-        
-        if let cameras = self.scene?.rootNode.childNode(withName: "cameras", recursively: true)?.childNodes {
-            self.cameras = cameras
-        }
-        if let extraCameras = self.scene?.rootNode.childNode(withName: "extraCameras", recursively: true)?.childNodes {
-            self.cameras.append(contentsOf: extraCameras)
-        }
-        
-        self.changeCamera(type: .initialCamera)
-        
-        
-        let skScene = Overlay(fileNamed: "art.scnassets/overlay.sks")!
-        skScene.scaleMode = .aspectFit
-        skScene.controlDelegate = self
-        self.scnView.overlaySKScene = skScene
-        
-        self.setupSensors()
-        self.setupSounds()
-        self.setupActions()
-        
-        if self.routineBlock == nil {
-            self.defaultInitialization()
-        }
-        else {
-            self.routineBlock!()
-        }
-    }
-    
-   
-    
-    
     public func showRadars() {
         self.radarController.showFrontalRadars()
     }
@@ -83,15 +38,17 @@ extension SceneController: NaveInterface {
    
     
     
-    public func setSpeed(speed: Float) {
-        
+    public func setSpeed(goalSpeed: Float) {
+        let speed = goalSpeed / self.SpeedUnit
         self.car.removeAllActions()
         let angle = self.car.eulerAngles.y
         print(angle * (180 / Float.pi))
         let setSpeedAction = SCNAction.run({ (node) in
             
             if let currentSpeed = self.car.physicsBody?.velocity {
+                
                 let speedModule = sqrt(currentSpeed.x * currentSpeed.x + currentSpeed.z * currentSpeed.z)
+                
                 let deltaV = speed - speedModule
                 
                 if abs(deltaV) < 0.5 {
@@ -100,9 +57,9 @@ extension SceneController: NaveInterface {
                 }
                 else {
                     let newSpeed = deltaV / (2 * abs(deltaV))
+                    
                     self.car.physicsBody?.velocity.x += newSpeed * sin(angle)
                     self.car.physicsBody?.velocity.z += newSpeed * cos(angle)
-                    
                 }
             }
         })

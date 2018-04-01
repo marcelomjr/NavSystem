@@ -30,7 +30,7 @@ extension SceneController: control {
         self.brakeTheCar()
     }
     func setSpeed(a: Float) {
-        self.setSpeed(speed: a / self.SpeedUnit)
+        self.setSpeed(goalSpeed: a)
     }
 }
 
@@ -68,9 +68,48 @@ public class SceneController: NSObject  {
         
         self.scnView = scnView
         
+
+        self.createScene()
+    }
+    
+    public func createScene() {
+        
+        self.scene = SCNScene(named: "art.scnassets/city.scn")
+        self.scnView.scene = self.scene
+        self.scene?.physicsWorld.contactDelegate = self
+        
+        guard let car = self.scene?.rootNode.childNode(withName: "carModel", recursively: true),
+            let carBox = self.scene?.rootNode.childNode(withName: "carBox", recursively: true) else
+        {
+            print("Error in get objects")
+            return
+        }
+        self.car = car
+        self.carBox = carBox
+        
+        if let cameras = self.scene?.rootNode.childNode(withName: "cameras", recursively: true)?.childNodes {
+            self.cameras = cameras
+        }
+        if let extraCameras = self.scene?.rootNode.childNode(withName: "extraCameras", recursively: true)?.childNodes {
+            self.cameras.append(contentsOf: extraCameras)
+        }
+        
+        self.changeCamera(type: .initialCamera)
+        
+        
+        let skScene = Overlay(fileNamed: "art.scnassets/overlay.sks")!
+        skScene.scaleMode = .aspectFit
+        skScene.controlDelegate = self
+        self.scnView.overlaySKScene = skScene
+        
+        self.setupSensors()
+        self.setupSounds()
+        self.setupActions()
+        
         self.sceneRenderer = scnView
         self.sceneRenderer!.delegate = self
     }
+    
     
     public func defaultInitialization() {
         
@@ -132,10 +171,10 @@ public class SceneController: NSObject  {
                     self.car.removeAction(forKey: "braking")
                 }
                 else {
-                    let brakingRate = 0.995
+                    let brakingRate: Float = 0.9
                     
-                    self.car.physicsBody?.velocity.x *= 0.995
-                    self.car.physicsBody?.velocity.z *= 0.995
+                    self.car.physicsBody?.velocity.x *= brakingRate
+                    self.car.physicsBody?.velocity.z *= brakingRate
                 }
                 
             }
@@ -188,9 +227,9 @@ extension SceneController: SCNSceneRendererDelegate {
             self.updateVisorTime = 0
             
         }
-
+        print(self.carBox.position)
         self.carBox.position = self.car.presentation.position
-        self.carBox.eulerAngles = self.car.presentation.eulerAngles
+        self.carBox.eulerAngles = self.car.eulerAngles
     }
 }
 extension SceneController: SCNPhysicsContactDelegate {
