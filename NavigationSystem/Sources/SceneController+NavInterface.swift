@@ -135,6 +135,24 @@ extension SceneController: NaveInterface {
         
         return float2(x, z)
     }
+    private func positionFunction(radAngle: Float, radius: Float, correction: float2, side: Side) -> float2 {
+        let angle = Float.pi - radAngle
+        
+        var x: Float
+        
+        // correcao de lado de virada
+        if side == Side.right {
+            x = -radius - (radius + radius * cos(angle))
+        }
+        else {
+            x = radius * cos(angle)
+        }
+        x += correction.x
+        
+        let z = radius * sin(angle) + correction.y
+        
+        return float2(x, z)
+    }
     
     private func rotateSimulation(radAngle: Float, point: float2, correction: float2) -> float2 {
         
@@ -144,10 +162,16 @@ extension SceneController: NaveInterface {
         return float2(x, z)
     }
     
-    public func turnCar(radius: Float, angle: Float) {
-        let turnAngle = -angle * (Float.pi / 180)
+     public func turnCar(radius: Float, side: Side, angle: Float) {
+        let turnAngle = angle * (Float.pi / 180)
         let carAngle = self.car.eulerAngles.y
         
+        let currentPosition = self.car.presentation.position
+        print("position: \(currentPosition)")
+        let positionCorrection = float2((currentPosition.x  + radius), currentPosition.z)
+        print("positionCorrection: \(positionCorrection)")
+        
+        self.car.physicsBody?.velocity = SCNVector3(0,0,0)
         let origin = turnSimulation(radAngle: 0, radius: radius)
         let rotatedOrigin = self.rotateSimulation(radAngle: carAngle, point: origin, correction: float2(0,0))
         
@@ -158,35 +182,43 @@ extension SceneController: NaveInterface {
         print(correction)
         
         let turnTime: TimeInterval = 3
-        let torque: Float = 2
         
         self.simulationAngle = 0
         
-        let rotateAction = SCNAction.run { _ in
-//            // para evitar resetar a aplicacao da forca
-//            self.car.transform = self.car.presentation.transform
-//            self.car.runAction(SCNAction.rotateBy(x: 0, y: CGFloat(turnAngle), z: 0, duration: turnTime))
-        }
         
         let turnAction = SCNAction.run { (node) in
-            
-            let moved = self.turnSimulation(radAngle: self.simulationAngle, radius: radius)
-            let rotated = self.rotateSimulation(radAngle: -carAngle, point: moved, correction: correction)
-            print("carAngle: \((carAngle * 180) / Float.pi) | moved: \(moved) | rotated: \(rotated)")
+            var newPosition = self.positionFunction(radAngle: self.simulationAngle, radius: radius, correction: positionCorrection, side: side)
             
             
-            self.car.physicsBody?.applyForce(SCNVector3(torque * rotated.x, 0, torque * rotated.y), asImpulse: true)
+//            let rotated = self.rotateSimulation(radAngle: carAngle, point: position, correction: <#T##float2#>)
+            
+            
+            
+            self.car.position.x = newPosition.x
+            self.car.position.z = newPosition.y
+            if side == .left {
+                self.car.eulerAngles.y += turnAngle * (1/100)
+            }
+            else {
+                self.car.eulerAngles.y += -turnAngle * (1/100)
+            }
+            print(newPosition)
+            
             self.simulationAngle += turnAngle * (1/100)
             
         }
+        
         let waitTime = TimeInterval(turnTime / 100)
         let sequence = SCNAction.sequence([turnAction, SCNAction.wait(duration: waitTime)])
         let turnSequenceLoop = SCNAction.repeat(sequence, count: 100)
         
-        let turnGroup = SCNAction.group([turnSequenceLoop, rotateAction])
-        
         self.car.removeAction(forKey: "moveForward")
-        self.car.runAction(turnGroup, forKey: "turnCar")
+        
+        
+        // para evitar resetar a aplicacao da forca
+        self.car.transform = self.car.presentation.transform
+        
+        self.car.runAction(turnSequenceLoop, forKey: "turnCar")
         
     }
 }

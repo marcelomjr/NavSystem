@@ -19,6 +19,11 @@ public enum CameraType: String {
     case coneProfile = "coneProfile"
 }
 
+public enum Side {
+    case left
+    case right
+}
+
 public protocol NaveInterface {
     func changeCamera(type: CameraType)
     func brakeTheCar()
@@ -29,5 +34,5 @@ public protocol NaveInterface {
     func hideRadars()
     func routine(block: (() -> Void)?)
     func createScene(named: String)
-    func turnCar(radius: Float, angle: Float)
+    func turnCar(radius: Float, side: Side, angle: Float)
 }

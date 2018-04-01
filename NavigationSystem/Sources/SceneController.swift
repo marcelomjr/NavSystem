@@ -18,13 +18,13 @@ enum CategoryBitMask: Int {
 }
 
 protocol control {
-    func turn(a: Float)
+    func turnCar(radius: Float, side: Side, a: Float)
     func brake()
     func setSpeed(a: Float)
 }
 extension SceneController: control {
-    func turn(a: Float) {
-        turnCar(radius: 5, angle: a)
+    func turnCar(radius: Float, side: Side, a: Float) {
+        turnCar(radius: radius, side: side, angle: a)
     }
     func brake() {
         self.brakeTheCar()
@@ -32,8 +32,9 @@ extension SceneController: control {
     func setSpeed(a: Float) {
         self.setSpeed(speed: a / self.SpeedUnit)
     }
-
 }
+
+
 public class SceneController: NSObject  {
     var simulationAngle: Float = 0
     let SpeedUnit: Float = 18 // (1 / SpeedUnit) m/s
