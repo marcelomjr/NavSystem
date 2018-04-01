@@ -15,6 +15,8 @@ enum CategoryBitMask: Int {
     case radar = 2  
     case car = 4
     case floor = 8
+    case barrier = 16
+    case lateralLimit = 32
 }
 
 protocol control {
@@ -33,12 +35,18 @@ extension SceneController: control {
         self.setSpeed(goalSpeed: a)
     }
 }
+public enum State {
+    case turning
+    case braking
+    case running
+}
 
 
 public class SceneController: NSObject  {
     var simulationAngle: Float = 0
     let SpeedUnit: Float = 18 // (1 / SpeedUnit) m/s
-    var carDirection: Float = 0
+    var definedSpeed: Float = 0
+    var state: State = .running
     
     var previuosTime: TimeInterval = 0
     var updateVisorTime: TimeInterval = 0
@@ -206,6 +214,21 @@ public class SceneController: NSObject  {
         }
         return velocity
     }
+    func followHandler(limit: SCNNode) {
+        if let value = limit.childNodes[0].name,
+        let distance = Float(value) {
+            if distance < 0 {
+                self.turnCar(radius: 10, side: .right, angle: 5)
+            }
+            else {
+                self.turnCar(radius: 10, side: .left, angle: 5)
+                self.car.runAction(SCNAction.wait(duration: 1), completionHandler: {
+//                    self.setSpeed(goalSpeed: 40)
+                    print("terminou")
+                })
+            }
+        }
+    }
     
 }
 extension SceneController: SCNSceneRendererDelegate {
@@ -227,16 +250,31 @@ extension SceneController: SCNSceneRendererDelegate {
             self.updateVisorTime = 0
             
         }
-        print(self.carBox.position)
+        if self.state == .running && self.car.actionKeys.count == 0 {
+            let speed = self.definedSpeed * self.SpeedUnit
+            self.setSpeed(goalSpeed: speed)
+        }
         self.carBox.position = self.car.presentation.position
         self.carBox.eulerAngles = self.car.eulerAngles
     }
 }
 extension SceneController: SCNPhysicsContactDelegate {
     
+    public func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
+        if contact.nodeA.name == "lateralLimit"  {
+            self.followHandler(limit: contact.nodeA)
+        }
+        else if contact.nodeB.name == "lateralLimit" {
+            self.followHandler(limit: contact.nodeB)
+        }
+        else if contact.nodeA.name == "corner" || contact.nodeB.name == "corner" {
+            self.turnCar(radius: 12, side: .right, angle: 90)
+        }
+        
+    }
+    
     public func physicsWorld(_ world: SCNPhysicsWorld, didUpdate contact: SCNPhysicsContact) {
-        if contact.nodeA.physicsBody?.categoryBitMask == CategoryBitMask.radar.rawValue ||
-            contact.nodeA.physicsBody?.categoryBitMask == CategoryBitMask.radar.rawValue {
+        if contact.nodeA.name == "frontalRadar" || contact.nodeA.name == "frontalRadar" {
             
             self.radarController.obstacleDetected(radar: 0)
             self.obstacleHandler()
@@ -244,8 +282,7 @@ extension SceneController: SCNPhysicsContactDelegate {
     }
     
     public func physicsWorld(_ world: SCNPhysicsWorld, didEnd contact: SCNPhysicsContact) {
-        if contact.nodeA.physicsBody?.categoryBitMask == CategoryBitMask.radar.rawValue ||
-            contact.nodeA.physicsBody?.categoryBitMask == CategoryBitMask.radar.rawValue {
+        if contact.nodeA.name == "frontalRadar" || contact.nodeA.name == "frontalRadar" {
             
             self.radarController.wayReleased(radar: 0)
         }

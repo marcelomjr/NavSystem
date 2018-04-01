@@ -50,7 +50,7 @@ extension SKSpriteNode {
                 overlay.controlDelegate.brake()
             }
             else if self.name == "speedbutton" {
-                overlay.controlDelegate.setSpeed(a: 50)
+                overlay.controlDelegate.setSpeed(a: 30)
             }
             else if self.name == "left" {
                 overlay.controlDelegate.turnCar(radius: radius, side: .left, a: 90)

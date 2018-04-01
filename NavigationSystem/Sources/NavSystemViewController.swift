@@ -30,7 +30,7 @@ public class NavSystemViewController: UIViewController {
         
         scnView.showsStatistics = true
         //        scnView.allowsCameraControl = true
-//        scnView.debugOptions = SCNDebugOptions.showPhysicsShapes
+        scnView.debugOptions = SCNDebugOptions.showPhysicsShapes
         
         self.systemInterface = self.sceneController
         
@@ -59,11 +59,11 @@ public class NavSystemViewController: UIViewController {
     }
     
     public func page1() {
-            self.systemInterface.changeCamera(type: .coneProfile)
+            self.systemInterface.changeCamera(type: .upper)
 
         self.systemInterface.setSpeed(goalSpeed: 70)
             self.systemInterface.setupFrontalRadars(limitDistance: 10)
-            self.systemInterface.showRadars()
+//            self.systemInterface.showRadars()
         
             func obstacleDetectedHandler() {
                 self.systemInterface.brakeTheCar()

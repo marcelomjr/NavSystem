@@ -40,9 +40,10 @@ extension SceneController: NaveInterface {
     
     public func setSpeed(goalSpeed: Float) {
         let speed = goalSpeed / self.SpeedUnit
+        self.definedSpeed = speed
         self.car.removeAllActions()
         let angle = self.car.eulerAngles.y
-        print(angle * (180 / Float.pi))
+        
         let setSpeedAction = SCNAction.run({ (node) in
             
             if let currentSpeed = self.car.physicsBody?.velocity {
@@ -74,6 +75,9 @@ extension SceneController: NaveInterface {
         if self.car.actionKeys.contains("braking") {
             return
         }
+        
+        self.state = .braking
+            
         self.car.removeAction(forKey: "moveForward")
         
         self.car.runAction(self.brakingAction, forKey: "braking")
@@ -120,10 +124,20 @@ extension SceneController: NaveInterface {
     }
     
      public func turnCar(radius: Float, side: Side, angle: Float) {
+        
+        if self.car.actionKeys.contains("turnCar") {
+            return
+        }
+        
+        if self.car.actionKeys.contains("braking") {
+            return
+        }
+        
         let loopTimes: Float = 100
         
+        self.state = .turning
         self.car.removeAction(forKey: "moveForward")
-        
+        self.car.removeAction(forKey: "turnCar")
         // para o carro, ver se e necessario mesmo
 //        self.car.physicsBody?.velocity = SCNVector3(0,0,0)
         
@@ -152,7 +166,7 @@ extension SceneController: NaveInterface {
 //        print("rotationCorrection: \(rotationCorrection)")
         
         
-        let turnTime: TimeInterval = 3
+        let turnTime: TimeInterval = 1
         self.simulationAngle = 0
         
         
@@ -168,15 +182,21 @@ extension SceneController: NaveInterface {
             
             if side == .left {
  
-                print("\(self.car.eulerAngles.y)  \(self.car.presentation.eulerAngles.y)")
+//                print("\(self.car.eulerAngles.y)  \(self.car.presentation.eulerAngles.y)")
                 self.car.eulerAngles.y += turnAngle * (1 / loopTimes)
             }
             else {
                 self.car.eulerAngles.y += -turnAngle * (1 / loopTimes)
             }
-            
+            print("virando")
             self.simulationAngle += turnAngle * (1 / loopTimes)
             
+        }
+        
+        let afterTurn = SCNAction.run { _ in
+            let speed = self.definedSpeed * self.SpeedUnit
+            self.car.physicsBody?.velocity = SCNVector3(0,0,0)
+            self.state = .running
         }
         
         let waitTime = turnTime / TimeInterval(loopTimes)
@@ -185,8 +205,8 @@ extension SceneController: NaveInterface {
 
         // para evitar resetar a aplicacao da forca
 //        self.car.transform = self.car.presentation.transform
-        
-        self.car.runAction(turnSequenceLoop, forKey: "turnCar")
+        let turnSequence = SCNAction.sequence([turnSequenceLoop, afterTurn])
+        self.car.runAction(turnSequence, forKey: "turnCar")
         
     }
 }
